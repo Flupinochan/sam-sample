@@ -16,38 +16,19 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  SAM_TEMPLATE: template.yaml
   PROD_SAM_CONFIG: samconfig/samconfig-prod.toml
   PROD_REGION: ap-northeast-1
   PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-prod-pipe-PipelineExecutionRole-zekKDx3iZ72o
   PROD_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-prod--CloudFormationExecutionRo-7i2xiv3oRe7y
-  SAM_TEMPLATE: template.yaml
 
 permissions:
   id-token: write
   contents: read
-jobs:
-  # バリデーション&テスト
-  validate-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Setup AWS SAM CLI
-        uses: aws-actions/setup-sam@v2
-        with:
-          use-installer: true
-      - name: Validate SAM template
-        run: |
-          sam validate \
-            --lint \
-            --template ${SAM_TEMPLATE}
-      - name: Run tests
-        run: |
-          # trigger the tests here
 
+jobs:
   # ビルド＆デプロイ
   build-and-deploy:
-    needs: [validate-and-test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -73,12 +54,3 @@ jobs:
           sam deploy \
             --config-file ${PROD_SAM_CONFIG} \
             --role-arn ${PROD_CLOUDFORMATION_EXECUTION_ROLE}
-
-  # ビルド後のテスト
-  integration-test:
-    needs: [build-and-deploy]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: |
-          # trigger the integration tests here

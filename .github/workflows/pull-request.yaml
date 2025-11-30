@@ -1,0 +1,86 @@
+name: PR Coverage
+
+on:
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  # Format & Lint
+  format-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+      - name: Install the code linting and formatting tool Ruff
+        run: pipx install ruff
+      # Format&Lintの結果をPRにコメントとして投稿
+      # https://github.com/marketplace/actions/create-or-update-comment
+      - name: Lint code with Ruff
+        run: ruff check --output-format=github
+      - name: Run Ruff format diff
+        id: diff_step
+        run: |
+          DIFF=$(ruff format --diff || true)
+          if [ -z "$DIFF" ]; then
+            DIFF="No formatting changes"
+          fi
+          echo "diff<<EOF" >> $GITHUB_OUTPUT
+          echo "$DIFF" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Find existing Ruff comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '### Ruff Format Diff'
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Ruff Format Diff
+            ```diff
+            ${{ steps.diff_step.outputs.diff }}
+            ```
+          edit-mode: replace
+
+  # テスト
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # Lambda環境変数のモック用
+      POWERTOOLS_METRICS_NAMESPACE: MyAppNamespace
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          # pyproject.toml に合わせる
+          python-version: 3.13
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install --with dev --no-root
+      - name: Run tests with coverage
+        run: |
+          poetry run pytest --cov=src --cov-fail-under=100 --cov-report=xml
+          poetry run coverage report > coverage.txt
+      # coverage.txt を PR にコメントとして投稿
+      - name: Post coverage to PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: coverage.txt

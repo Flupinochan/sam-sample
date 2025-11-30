@@ -16,18 +16,19 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  SAM_TEMPLATE: template.yaml
   DEV_SAM_CONFIG: samconfig/samconfig-dev.toml
   DEV_REGION: ap-northeast-1
   DEV_PIPELINE_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-dev-pipel-PipelineExecutionRole-6nHJDsLBsTX7
   DEV_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-uWkYpf2NyLLU
-  SAM_TEMPLATE: template.yaml
 
 permissions:
   id-token: write
   contents: read
+
 jobs:
-  # バリデーション&テスト
-  validate-and-test:
+  # SAMバリデーション
+  validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -41,13 +42,49 @@ jobs:
           sam validate \
             --lint \
             --template ${SAM_TEMPLATE}
-      - name: Run tests
+
+  # Format & Lint
+  format-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+      - name: Install the code linting and formatting tool Ruff
+        run: pipx install ruff
+      - name: Lint code with Ruff
+        run: ruff check --output-format=github
+      - name: Check code formatting with Ruff
+        run: ruff format --diff
+        continue-on-error: true
+
+  # テスト
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # Lambda環境変数のモック用
+      POWERTOOLS_METRICS_NAMESPACE: MyAppNamespace
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          # pyproject.toml に合わせる
+          python-version: 3.13
+      - name: Install dependencies
         run: |
-          # trigger the tests here
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install --with dev --no-root
+      - name: Run tests with coverage
+        run: poetry run pytest --cov=src --cov-fail-under=100
 
   # ビルド＆デプロイ
   build-and-deploy:
-    needs: [validate-and-test]
+    needs: [validate, format-and-lint, test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

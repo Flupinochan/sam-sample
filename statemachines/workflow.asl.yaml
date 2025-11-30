@@ -1,0 +1,40 @@
+Comment: A description of my state machine
+QueryLanguage: JSONata
+StartAt: Lambda Invoke 1
+States:
+  Lambda Invoke 1:
+    Arguments:
+      FunctionName: ${FunctionArn}
+      Payload: "{% $states.input %}"
+    Next: Lambda Invoke 2
+    Output: "{% $states.result.Payload %}"
+    Resource: arn:aws:states:::lambda:invoke
+    Retry:
+      - BackoffRate: 2
+        ErrorEquals:
+          - Lambda.ServiceException
+          - Lambda.AWSLambdaException
+          - Lambda.SdkClientException
+          - Lambda.TooManyRequestsException
+        IntervalSeconds: 1
+        JitterStrategy: FULL
+        MaxAttempts: 3
+    Type: Task
+  Lambda Invoke 2:
+    Arguments:
+      FunctionName: ${FunctionArn}
+      Payload: "{% $states.input %}"
+    End: true
+    Output: "{% $states.result.Payload %}"
+    Resource: arn:aws:states:::lambda:invoke
+    Retry:
+      - BackoffRate: 2
+        ErrorEquals:
+          - Lambda.ServiceException
+          - Lambda.AWSLambdaException
+          - Lambda.SdkClientException
+          - Lambda.TooManyRequestsException
+        IntervalSeconds: 1
+        JitterStrategy: FULL
+        MaxAttempts: 3
+    Type: Task
