@@ -25,7 +25,9 @@ def lambda_context() -> LambdaContext:
     class MockLambdaContext:
         function_name: str = "local_test_function"
         memory_limit_in_mb: int = 512
-        invoked_function_arn: str = "arn:aws:lambda:ap-northeast-1:12345678910:function:local_test_function"
+        invoked_function_arn: str = (
+            "arn:aws:lambda:ap-northeast-1:12345678910:function:local_test_function"
+        )
         aws_request_id: str = "12345678-2182-154f-163f-5f0f9a621d72"
 
     return MockLambdaContext()  # type: ignore[return-value]
