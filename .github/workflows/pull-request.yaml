@@ -22,8 +22,16 @@ jobs:
           python-version: 3.13
       - name: Install the code linting and formatting tool Ruff
         run: pipx install ruff
+      # Format&Lintの結果をPRにコメントとして投稿
       - name: Lint code with Ruff
         run: ruff check --output-format=github
+      - name: Run Ruff format diff
+        id: diff_step
+        run: |
+          DIFF=$(ruff format --diff || echo "No formatting changes")
+          echo "diff<<EOF" >> $GITHUB_OUTPUT
+          echo "$DIFF" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
       - name: Comment Ruff format diff on PR
         uses: peter-evans/create-or-update-comment@v5
         with:
@@ -31,7 +39,7 @@ jobs:
           body: |
             ### Ruff Format Diff
             ```diff
-            $(ruff format --diff || echo "No formatting changes")
+            ${{ steps.diff_step.outputs.diff }}
             ```
 
   # テスト
@@ -57,7 +65,7 @@ jobs:
         run: |
           poetry run pytest --cov=src --cov-fail-under=100 --cov-report=xml
           poetry run coverage report > coverage.txt
-      # Post coverage report to PR
+      # coverage.txt を PR にコメントとして投稿
       - name: Post coverage to PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
