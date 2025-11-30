@@ -27,3 +27,6 @@ dev = [
 # poetryでinstallする際にエラーが発生するため追加
 [tool.poetry.dependencies]
 python = ">=3.13,<4.0"
+
+[tool.ruff.lint]
+ignore = ["E402"]
