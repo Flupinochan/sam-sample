@@ -36,7 +36,7 @@ sam pipeline bootstrap
 ### CloudFormation Templateチェック
 
 ```bash
-sam validate
+sam validate --lint --template template.yaml
 ```
 
 ### Build

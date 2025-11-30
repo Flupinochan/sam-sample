@@ -38,5 +38,4 @@ jobs:
         run: |
           sam delete \
             --config-file ${DEV_SAM_CONFIG} \
-            --region ${DEV_REGION} \
             --no-prompts
