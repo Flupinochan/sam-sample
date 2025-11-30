@@ -28,9 +28,10 @@ jobs:
         with:
           use-installer: true
       - name: Validate SAM template
-        run: sam validate \
-              --lint \
-              --template ${SAM_TEMPLATE}
+        run: |
+          sam validate \
+            --lint \
+            --template ${SAM_TEMPLATE}
       - name: Run tests
         run: |
           # trigger the tests here
@@ -47,8 +48,9 @@ jobs:
         with:
           use-installer: true
       - name: Build resources
-        run: sam build \
-              --config-file ${DEV_SAM_CONFIG}
+        run: |
+          sam build \
+            --config-file ${DEV_SAM_CONFIG}
       - name: Assume the dev pipeline user role
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -58,9 +60,10 @@ jobs:
           role-duration-seconds: 3600
           role-skip-session-tagging: true
       - name: Deploy sam stack
-        run: sam deploy \
-              --config-file ${DEV_SAM_CONFIG} \
-              --role-arn ${DEV_CLOUDFORMATION_EXECUTION_ROLE}
+        run: |
+          sam deploy \
+            --config-file ${DEV_SAM_CONFIG} \
+            --role-arn ${DEV_CLOUDFORMATION_EXECUTION_ROLE}
 
   # ビルド後のテスト
   integration-test:
