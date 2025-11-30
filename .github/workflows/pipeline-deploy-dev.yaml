@@ -30,6 +30,9 @@ jobs:
   # バリデーション&テスト
   validate-and-test:
     runs-on: ubuntu-latest
+    env:
+      # Lambda環境変数のモック用
+      POWERTOOLS_METRICS_NAMESPACE: MyAppNamespace
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
