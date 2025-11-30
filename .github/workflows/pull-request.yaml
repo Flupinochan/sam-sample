@@ -5,6 +5,11 @@ on:
     branches:
       - master
 
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
 jobs:
   # Format & Lint
   format-and-lint:
@@ -20,9 +25,8 @@ jobs:
       - name: Lint code with Ruff
         run: ruff check --output-format=github
       - name: Comment Ruff format diff on PR
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ### Ruff Format Diff
