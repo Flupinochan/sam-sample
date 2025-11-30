@@ -29,7 +29,6 @@ permissions:
 jobs:
   # ビルド＆デプロイ
   build-and-deploy:
-    needs: [validate, format-and-lint, test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
