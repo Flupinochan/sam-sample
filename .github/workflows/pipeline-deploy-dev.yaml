@@ -43,16 +43,15 @@ jobs:
             --lint \
             --template ${SAM_TEMPLATE}
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           # pyproject.toml に合わせる
           python-version: 3.13
       - name: Install dependencies
-        # 依存関係でエラーになるため、 ignore-platform-reqs を付与
         run: |
           python -m pip install --upgrade pip
           pip install poetry
-          poetry install --with dev
+          poetry install --with dev --no-root
       - name: Run tests with coverage
         run: poetry run pytest --cov=src --cov-fail-under=100
 
