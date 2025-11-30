@@ -11,6 +11,7 @@ env:
   DEV_REGION: ap-northeast-1
   DEV_PIPELINE_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-dev-pipel-PipelineExecutionRole-6nHJDsLBsTX7
   DEV_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-uWkYpf2NyLLU
+  SAM_TEMPLATE: template.yaml
 
 permissions:
   id-token: write
@@ -28,7 +29,8 @@ jobs:
           use-installer: true
       - name: Validate SAM template
         run: sam validate \
-              --config-file ${DEV_SAM_CONFIG}
+              --lint \
+              --template ${SAM_TEMPLATE}
       - name: Run tests
         run: |
           # trigger the tests here
