@@ -23,6 +23,7 @@ jobs:
       - name: Install the code linting and formatting tool Ruff
         run: pipx install ruff
       # Format&Lintの結果をPRにコメントとして投稿
+      # https://github.com/marketplace/actions/create-or-update-comment
       - name: Lint code with Ruff
         run: ruff check --output-format=github
       - name: Run Ruff format diff
@@ -35,15 +36,24 @@ jobs:
           echo "diff<<EOF" >> $GITHUB_OUTPUT
           echo "$DIFF" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-      - name: Comment Ruff format diff on PR
+      - name: Find existing Ruff comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '### Ruff Format Diff'
+      - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v5
         with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ### Ruff Format Diff
             ```diff
             ${{ steps.diff_step.outputs.diff }}
             ```
+          edit-mode: replace
 
   # テスト
   test:
