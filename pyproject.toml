@@ -23,3 +23,6 @@ dev = [
     "pytest-cov>=7.0.0",
     "python-dotenv>=1.2.1",
 ]
+
+[tool.poetry.dependencies]
+python = ">=3.13,<4.0"

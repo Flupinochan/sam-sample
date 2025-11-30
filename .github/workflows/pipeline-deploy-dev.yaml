@@ -48,10 +48,11 @@ jobs:
           # pyproject.toml に合わせる
           python-version: 3.13
       - name: Install dependencies
+        # 依存関係でエラーになるため、 ignore-platform-reqs を付与
         run: |
           python -m pip install --upgrade pip
           pip install poetry
-          poetry install --with dev --ignore-platform-reqs
+          poetry install --with dev
       - name: Run tests with coverage
         run: poetry run pytest --cov=src --cov-fail-under=100
 
