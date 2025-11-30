@@ -82,4 +82,5 @@ jobs:
       - name: Post coverage to PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
+          recreate: true
           path: coverage.txt
