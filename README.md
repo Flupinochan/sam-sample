@@ -44,3 +44,15 @@ sam validate --lint --template template.yaml
 ```bash
 sam sync --watch
 ```
+
+### python version確認
+
+```bash
+# インストール済みのPythonバージョンを確認
+py --list
+
+# python3.12のcfn-lintをuninstall
+py -3.12 -m pip uninstall cfn-lint
+
+# 環境変数のPathをとおして再起動
+```

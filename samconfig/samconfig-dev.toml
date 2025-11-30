@@ -23,5 +23,5 @@ confirm_changeset = false
 capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
 fail_on_empty_changeset = false
 parameter_overrides = [
-    "CloudFormationEnvironment=dev"
+    "LogLevel=DEBUG"
 ]

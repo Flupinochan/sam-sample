@@ -7,7 +7,7 @@ def lambda_handler(event, context):
     """Sample Lambda function which mocks the operation of selling a random number
     of shares for a stock.
 
-    For demonstration purposes, this Lambda function does not actually perform any 
+    For demonstration purposes, this Lambda function does not actually perform any
     actual transactions. It simply returns a mocked result.
 
     Parameters
@@ -19,8 +19,9 @@ def lambda_handler(event, context):
         Lambda Context runtime methods and attributes
 
     Returns
-    ------
+    -------
         dict: Object containing details of the stock selling transaction
+
     """
     # Get the price of the stock provided as input
     stock_price = event["stock_price"]
@@ -30,7 +31,7 @@ def lambda_handler(event, context):
         "price": str(stock_price),  # Price of each share
         "type": "sell",  # Type of transaction (buy/sell)
         "qty": str(
-            randint(1, 10)
+            randint(1, 10),
         ),  # Number of shares bought/sold (We are mocking this as a random integer between 1 and 10)
         "timestamp": datetime.now().isoformat(),  # Timestamp of the when the transaction was completed
     }

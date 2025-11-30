@@ -16,15 +16,16 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  SAM_TEMPLATE: template.yaml
   DEV_SAM_CONFIG: samconfig/samconfig-dev.toml
   DEV_REGION: ap-northeast-1
   DEV_PIPELINE_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-dev-pipel-PipelineExecutionRole-6nHJDsLBsTX7
   DEV_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-uWkYpf2NyLLU
-  SAM_TEMPLATE: template.yaml
 
 permissions:
   id-token: write
   contents: read
+
 jobs:
   # バリデーション&テスト
   validate-and-test:
