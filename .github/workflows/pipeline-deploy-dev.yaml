@@ -5,6 +5,11 @@ on:
   push:
     branches:
       - 'dev**'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'tests/**'
+      - '.gitignore'
 
 env:
   DEV_SAM_CONFIG: samconfig/samconfig-dev.toml
