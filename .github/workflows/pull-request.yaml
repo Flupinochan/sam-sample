@@ -6,6 +6,30 @@ on:
       - master
 
 jobs:
+  # Format & Lint
+  format-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+      - name: Install the code linting and formatting tool Ruff
+        run: pipx install ruff
+      - name: Lint code with Ruff
+        run: ruff check --output-format=github
+      - name: Comment Ruff format diff on PR
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Ruff Format Diff
+            ```diff
+            $(ruff format --diff || echo "No formatting changes")
+            ```
+
   # テスト
   test:
     runs-on: ubuntu-latest
@@ -29,6 +53,7 @@ jobs:
         run: |
           poetry run pytest --cov=src --cov-fail-under=100 --cov-report=xml
           poetry run coverage report > coverage.txt
+      # Post coverage report to PR
       - name: Post coverage to PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
