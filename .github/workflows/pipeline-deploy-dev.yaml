@@ -5,6 +5,15 @@ on:
   push:
     branches:
       - 'dev**'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'tests/**'
+      - '.gitignore'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   DEV_SAM_CONFIG: samconfig/samconfig-dev.toml
