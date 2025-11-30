@@ -42,9 +42,18 @@ jobs:
           sam validate \
             --lint \
             --template ${SAM_TEMPLATE}
-      - name: Run tests
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          # pyproject.toml に合わせる
+          python-version: 3.13
+      - name: Install dependencies
         run: |
-          # trigger the tests here
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install --with dev
+      - name: Run tests with coverage
+        run: poetry run pytest --cov=src --cov-fail-under=100
 
   # ビルド＆デプロイ
   build-and-deploy:

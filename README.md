@@ -56,3 +56,46 @@ py -3.12 -m pip uninstall cfn-lint
 
 # 環境変数のPathをとおして再起動
 ```
+
+### 開発環境セットアップ
+
+```bash
+# 仮想環境を作成
+uv venv --python 3.13
+
+# 仮想環境を有効化
+## Linux
+source .venv/bin/activate
+## Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+
+# 外部ライブラリをインストール
+uv pip install -r layer/requirements.txt
+uv pip install -r tests/requirements.txt
+
+# テスト実行
+## htmlcov/index.htmlでカバレッジが確認可能
+pytest --cov=src tests/ --cov-report=html
+## VSCode拡張機能Coverage Guttersを利用する場合
+pytest --cov=src tests/ --cov-report=xml
+```
+
+### プロジェクト初期化
+
+```bash
+# pyproject.tomlを作成
+uv init
+# 外部ライブラリ手動追加
+uv add tenacity
+uv add --dev pytest
+# 外部ライブラリをpyproject.tomlに従ってインストール
+# project.tomlからrequirements.txtを作成
+uv sync
+uv sync --no-dev # 本番依存のみ
+uv pip compile pyproject.toml -o layer/requirements.txt # 本番のみ
+```
+
+### プロンプト
+
+[starship](https://starship.rs/ja-JP/)
+
