@@ -26,5 +26,10 @@ jobs:
           pip install poetry
           poetry install --with dev --no-root
       - name: Run tests with coverage
-        run: poetry run pytest --cov=src --cov-fail-under=100
-
+        run: |
+          poetry run pytest --cov=src --cov-fail-under=100 --cov-report=xml
+          poetry run coverage report > coverage.txt
+      - name: Post coverage to PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: coverage.txt
