@@ -49,4 +49,4 @@ def lambda_handler(event: LambdaEvent, _context: LambdaContext) -> dict:
         logger.exception("Lambda実行エラー")
         raise
 
-    return {"statusCode": 200, "body": "Hello from Lambda!"}
+    return {"message": "Hello from Function2!"}
