@@ -14,7 +14,7 @@ template_file = "template.yaml"
 [default.build.parameters]
 parallel = true
 cached = true
-use_container = false
+use_container = true
 
 [default.deploy.parameters]
 # resolve_s3 = true
