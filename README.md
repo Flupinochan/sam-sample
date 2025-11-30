@@ -27,7 +27,7 @@ sam init
 
 
 ```bash
-# 1. pipeline設定ファイルの生成 (pipelineconfig.tomlを作成)
+# 1. pipeline設定ファイルの生成 (pipelineconfig.toml、github workflowを作成)
 sam pipeline init
 # 2. pipelineconfig.tomlに基づきCI/CD実行に必要なIAM Role等を作成
 sam pipeline bootstrap
@@ -44,4 +44,3 @@ sam validate --lint --template template.yaml
 ```bash
 sam sync --watch
 ```
-
