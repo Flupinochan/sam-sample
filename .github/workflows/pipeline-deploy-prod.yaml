@@ -11,6 +11,10 @@ on:
       - 'tests/**'
       - '.gitignore'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   PROD_SAM_CONFIG: samconfig/samconfig-prod.toml
   PROD_REGION: ap-northeast-1
