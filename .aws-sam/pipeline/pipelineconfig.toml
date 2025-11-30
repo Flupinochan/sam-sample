@@ -1,0 +1,24 @@
+version = 0.1
+
+[default.pipeline_bootstrap.parameters]
+oidc_provider_url = "https://token.actions.githubusercontent.com"
+oidc_client_id = "sts.amazonaws.com"
+github_org = "Flupinochan"
+github_repo = "sam-sample"
+deployment_branch = "dev"
+oidc_provider = "github-actions"
+permissions_provider = "OpenID Connect (OIDC)"
+
+[dev.pipeline_bootstrap.parameters]
+pipeline_execution_role = "arn:aws:iam::247574246160:role/aws-sam-cli-managed-dev-pipel-PipelineExecutionRole-6nHJDsLBsTX7"
+cloudformation_execution_role = "arn:aws:iam::247574246160:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-uWkYpf2NyLLU"
+artifacts_bucket = "aws-sam-cli-managed-dev-pipeline-r-artifactsbucket-qehurqvv2mjh"
+image_repository = ""
+region = "ap-northeast-1"
+
+[prod.pipeline_bootstrap.parameters]
+pipeline_execution_role = "arn:aws:iam::247574246160:role/aws-sam-cli-managed-prod-pipe-PipelineExecutionRole-zekKDx3iZ72o"
+cloudformation_execution_role = "arn:aws:iam::247574246160:role/aws-sam-cli-managed-prod--CloudFormationExecutionRo-7i2xiv3oRe7y"
+artifacts_bucket = "aws-sam-cli-managed-prod-pipeline--artifactsbucket-yaqztgayi9ub"
+image_repository = ""
+region = "ap-northeast-1"

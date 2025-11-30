@@ -1,0 +1,70 @@
+# Dev環境のSAMスタックデプロイ用ワークフロー
+name: Pipeline-Dev-Deploy
+
+on:
+  push:
+    branches:
+      - 'dev**'
+
+env:
+  DEV_SAM_CONFIG: samconfig/samconfig-dev.toml
+  DEV_REGION: ap-northeast-1
+  DEV_PIPELINE_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-dev-pipel-PipelineExecutionRole-6nHJDsLBsTX7
+  DEV_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-uWkYpf2NyLLU
+
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  # バリデーション&テスト
+  validate-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      - name: Validate SAM template
+        run: sam validate \
+              --config-file ${DEV_SAM_CONFIG}
+      - name: Run tests
+        run: |
+          # trigger the tests here
+
+  # ビルド＆デプロイ
+  build-and-deploy:
+    needs: [validate-and-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      - name: Build resources
+        run: sam build \
+              --config-file ${DEV_SAM_CONFIG}
+      - name: Assume the dev pipeline user role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.DEV_REGION }}
+          role-to-assume: ${{ env.DEV_PIPELINE_EXECUTION_ROLE }}
+          role-session-name: dev-deployment
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
+      - name: Deploy sam stack
+        run: sam deploy \
+              --config-file ${DEV_SAM_CONFIG} \
+              --role-arn ${DEV_CLOUDFORMATION_EXECUTION_ROLE}
+
+  # ビルド後のテスト
+  integration-test:
+    needs: [build-and-deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          # trigger the integration tests here
