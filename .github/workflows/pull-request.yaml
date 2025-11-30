@@ -28,7 +28,10 @@ jobs:
       - name: Run Ruff format diff
         id: diff_step
         run: |
-          DIFF=$(ruff format --diff || echo "No formatting changes")
+          DIFF=$(ruff format --diff || true)
+          if [ -z "$DIFF" ]; then
+            DIFF="No formatting changes"
+          fi
           echo "diff<<EOF" >> $GITHUB_OUTPUT
           echo "$DIFF" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
