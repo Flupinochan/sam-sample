@@ -8,7 +8,7 @@ watch = true
 
 [default.global.parameters]
 region = "ap-northeast-1"
-stack_name = "dev-sam-sample"
+stack_name = "prod-sam-sample"
 template_file = "template.yaml"
 
 [default.build.parameters]
@@ -18,10 +18,10 @@ use_container = true
 
 [default.deploy.parameters]
 # resolve_s3 = true
-s3_bucket = "aws-sam-cli-managed-dev-pipeline-r-artifactsbucket-qehurqvv2mjh"
+s3_bucket = "aws-sam-cli-managed-prod-pipeline--artifactsbucket-yaqztgayi9ub"
 confirm_changeset = false
 capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
 fail_on_empty_changeset = false
 parameter_overrides = [
-    "CloudFormationEnvironment=dev"
+    "CloudFormationEnvironment=prod"
 ]
