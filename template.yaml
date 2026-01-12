@@ -1,0 +1,171 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-sample
+
+  Sample SAM Template for sam-sample
+
+Parameters:
+  ProjectDescription:
+    Type: String
+    Default: "sam-sample"
+    NoEcho: true
+
+  LogLevel:
+    Type: String
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Architectures:
+      - x86_64
+    Timeout: 900
+    MemorySize: 512
+    Handler: app.lambda_handler
+    Layers:
+      - !Ref Layer
+      - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV3-python313-x86_64:25
+      - arn:aws:lambda:ap-northeast-1:336392948345:layer:AWSSDKPandas-Python313:5
+    Tracing: Active
+    Environment:
+      Variables:
+        TZ: "Asia/Tokyo"
+        POWERTOOLS_METRICS_NAMESPACE: !Sub ${AWS::StackName}
+        POWERTOOLS_LOG_LEVEL: !Ref LogLevel
+        POWERTOOLS_LOGGER_LOG_EVENT: "True"
+        POWERTOOLS_TRACE_DISABLED: "False"
+        POWERTOOLS_TRACER_CAPTURE_RESPONSE: "True"
+        POWERTOOLS_TRACER_CAPTURE_ERROR: "True"
+
+Resources:
+  StepFunctions:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Name: !Sub ${AWS::StackName}-state-machine
+      DefinitionUri: statemachines/workflow.asl.yaml
+      DefinitionSubstitutions:
+        FunctionArn: !GetAtt Function.Arn
+      Role: !GetAtt StepFunctionsRole.Arn
+      Logging:
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt StepFunctionsLogGroup.Arn
+        IncludeExecutionData: true
+        Level: ALL
+      Tracing:
+        Enabled: true
+
+  StepFunctionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-step-functions-role
+      Description: !Ref ProjectDescription
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}-step-functions-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: LambdaInvokePermissions
+                Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt Function.Arn
+              - Sid: StepFunctionsLoggingPermissions
+                Effect: Allow
+                Action:
+                  - logs:CreateLogDelivery
+                  - logs:CreateLogStream
+                  - logs:GetLogDelivery
+                  - logs:UpdateLogDelivery
+                  - logs:DeleteLogDelivery
+                  - logs:ListLogDeliveries
+                  - logs:PutLogEvents
+                  - logs:PutResourcePolicy
+                  - logs:DescribeResourcePolicies
+                  - logs:DescribeLogGroups
+                Resource:
+                  - "*"
+
+  StepFunctionsLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub ${AWS::StackName}-state-machine-logs
+      LogGroupClass: STANDARD
+      RetentionInDays: 60
+
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-function
+      Description: !Ref ProjectDescription
+      CodeUri: src/
+      LoggingConfig:
+        LogFormat: JSON
+        ApplicationLogLevel: !Ref LogLevel
+        SystemLogLevel: !Ref LogLevel
+        LogGroup: !Ref LogGroup
+      Role: !GetAtt Role.Arn
+      Environment:
+        Variables:
+          POWERTOOLS_METRICS_NAMESPACE: !Sub ${AWS::StackName}
+          POWERTOOLS_SERVICE_NAME: !Sub ${AWS::StackName}-function
+
+  Layer:
+    Type: AWS::Serverless::LayerVersion
+    Metadata:
+      BuildMethod: python3.13
+    Properties:
+      LayerName: !Sub ${AWS::StackName}-layer
+      Description: !Ref ProjectDescription
+      ContentUri: "layer/"
+
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-role
+      Description: !Ref ProjectDescription
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub ${AWS::StackName}-logs
+      LogGroupClass: STANDARD
+      RetentionInDays: 60
+
+  ApplicationResourceGroup:
+    Type: AWS::ResourceGroups::Group
+    Properties:
+      Name: !Sub ${AWS::StackName}-app-rg
+      Description: !Ref ProjectDescription
+      ResourceQuery:
+        Type: CLOUDFORMATION_STACK_1_0
+
+  ApplicationInsightsMonitoring:
+    Type: AWS::ApplicationInsights::Application
+    Properties:
+      AutoConfigurationEnabled: true
+      ResourceGroupName: !Ref ApplicationResourceGroup

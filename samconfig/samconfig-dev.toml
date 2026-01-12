@@ -1,0 +1,28 @@
+version = 0.1
+
+[default.global.parameters]
+region = "ap-northeast-1"
+stack_name = "dev-sam-sample"
+template_file = "template.yaml"
+
+[default.validate.parameters]
+lint = true
+
+[default.sync.parameters]
+watch = true
+use_container = true
+
+[default.build.parameters]
+parallel = true
+cached = true
+use_container = true
+
+[default.deploy.parameters]
+# resolve_s3 = true
+s3_bucket = "aws-sam-cli-managed-dev-pipeline-r-artifactsbucket-qehurqvv2mjh"
+confirm_changeset = false
+fail_on_empty_changeset = false
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
+parameter_overrides = [
+    "LogLevel=DEBUG"
+]

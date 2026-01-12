@@ -1,0 +1,56 @@
+# Prod(masterブランチ)環境のSAMスタックデプロイ用ワークフロー
+name: Pipeline-Prod-Deploy
+
+on:
+  push:
+    branches:
+      - 'master'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'tests/**'
+      - '.gitignore'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SAM_TEMPLATE: template.yaml
+  PROD_SAM_CONFIG: samconfig/samconfig-prod.toml
+  PROD_REGION: ap-northeast-1
+  PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-prod-pipe-PipelineExecutionRole-zekKDx3iZ72o
+  PROD_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-prod--CloudFormationExecutionRo-7i2xiv3oRe7y
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  # ビルド＆デプロイ
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      - name: Build resources
+        run: |
+          sam build \
+            --config-file ${PROD_SAM_CONFIG}
+      - name: Assume the prod pipeline user role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.PROD_REGION }}
+          role-to-assume: ${{ env.PROD_PIPELINE_EXECUTION_ROLE }}
+          role-session-name: prod-deployment
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
+      - name: Deploy sam stack
+        run: |
+          sam deploy \
+            --config-file ${PROD_SAM_CONFIG} \
+            --role-arn ${PROD_CLOUDFORMATION_EXECUTION_ROLE}

@@ -1,0 +1,57 @@
+# Dev環境のSAMスタック削除用ワークフロー
+
+# PipelineExecutionRoleについてデフォルトではpushイベントのみに権限が与えられている
+# 1. そのため、手動でIAM Roleの信頼関係を以下のように変更する必要がある
+# デフォルト: "token.actions.githubusercontent.com:sub": "repo:Flupinochan/sam-sample:ref:refs/heads/dev"
+# 変更内容: "token.actions.githubusercontent.com:sub": "repo:Flupinochan/sam-sample:*"
+# 2. CloudFormationでドリフト検出して変更を保存
+name: Pipeline-Dev-Delete
+
+on:
+  delete:
+    branches:
+      - 'dev**'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'tests/**'
+      - '.gitignore'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SAM_TEMPLATE: template.yaml
+  DEV_SAM_CONFIG: samconfig/samconfig-dev.toml
+  DEV_REGION: ap-northeast-1
+  DEV_PIPELINE_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-dev-pipel-PipelineExecutionRole-6nHJDsLBsTX7
+  DEV_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::247574246160:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-uWkYpf2NyLLU
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  delete-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      - name: Assume the dev pipeline user role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.DEV_REGION }}
+          role-to-assume: ${{ env.DEV_PIPELINE_EXECUTION_ROLE }}
+          role-session-name: dev-delete
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
+      - name: Delete dev branch stack
+        run: |
+          sam delete \
+            --config-file ${DEV_SAM_CONFIG} \
+            --no-prompts
