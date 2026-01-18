@@ -25,6 +25,7 @@ sam pipeline bootstrap
 sam validate --config-file samconfig/samconfig-dev.toml --template-file template.yaml
 sam build --config-file samconfig/samconfig-dev.toml --template-file template.yaml
 sam sync --watch --config-file samconfig/samconfig-dev.toml --template-file template.yaml
-sam deploy --config-file samconfig/samconfig-dev.toml --template-file template.yaml
+# deployは.aws-samフォルダ内のtemplateを利用するため指定不要
+sam deploy --config-file samconfig/samconfig-dev.toml
 sam delete --config-file samconfig/samconfig-dev.toml
 ```
